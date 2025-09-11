@@ -309,10 +309,32 @@ if (!class_exists('MRKV_CHECKBOX_RECEIPT'))
 			        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
 			    );
 
+			     $orders = get_posts([
+				    'post_type'      => 'shop_order',
+				    'post_status'    => 'any', 
+				    'posts_per_page' => 1,    
+				    'meta_query'     => [
+				        [
+				            'key'     => 'receipt_id',
+				            'value'   => $uuid,
+				            'compare' => '='
+				        ]
+				    ]
+				]);
+
+				if ( ! empty( $orders ) ) 
+				{
+					continue;
+				}
+
 			    $result_answer = $api->getReceipt($uuid);
 
-		    	if(isset($result_answer['message']))
+		    	if(isset($result_answer['id']) && isset($result_answer['type']) && isset($result_answer['status']))
 		    	{
+		    		continue;
+	            }
+	            else
+	            {
 	            	$has_uuid = false;
 	            }
 	    	}

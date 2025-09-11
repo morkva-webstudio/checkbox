@@ -851,7 +851,7 @@ if (!class_exists('MRKV_CHECKBOX_SETUP'))
 	                            <?php esc_html_e("Лог", 'checkbox'); ?>
 	                        </p>
 	                        <?php 
-	                            $log_file = file_get_contents(plugin_dir_url($this->file_name) . "logs/checkbox.log");
+	                            $log_file = file_get_contents( plugin_dir_path( $this->file_name ) . "logs/checkbox.log" );
 	                        ?>
 	                        <pre class="checkbox-log-pre"><?php echo $log_file; ?></pre>
 	                        <div class="btn-call-clean-log"><?php echo __('Очистити лог', 'checkbox'); ?></div>
