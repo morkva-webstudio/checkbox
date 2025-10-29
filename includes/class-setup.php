@@ -890,7 +890,10 @@ if (!class_exists('MRKV_CHECKBOX_SETUP'))
 	                    jQuery.ajax({
 	                        url: '<?php echo admin_url( "admin-ajax.php" ) ?>',
 	                        type: 'POST',
-	                        data: 'action=checkbox_clean_log', 
+	                        data: {
+				                action: 'checkbox_clean_log',
+				                _ajax_nonce: '<?php echo wp_create_nonce("checkbox_clean_log_nonce"); ?>'
+				            },
 	                        success: function( data ) {
 	                            jQuery('.checkbox-log-pre').text('');
 	                        }
@@ -901,7 +904,9 @@ if (!class_exists('MRKV_CHECKBOX_SETUP'))
 	        <?php
 	    }
 
-	    public function checkbox_clean_log_func(){
+	    public function checkbox_clean_log_func()
+	    {
+	    	check_ajax_referer('checkbox_clean_log_nonce', '_ajax_nonce');
 		    file_put_contents( plugin_dir_path($this->file_name) . "logs/checkbox.log", '');
 
 		    die; 
