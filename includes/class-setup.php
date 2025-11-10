@@ -907,9 +907,21 @@ if (!class_exists('MRKV_CHECKBOX_SETUP'))
 	    public function checkbox_clean_log_func()
 	    {
 	    	check_ajax_referer('checkbox_clean_log_nonce', '_ajax_nonce');
+
+	    	if ( ! current_user_can( 'manage_options' ) ) {
+		        wp_send_json_error([
+		            'message' => 'You do not have permission to perform this action.'
+		        ], 403 );
+		        wp_die();
+		    }
+
 		    file_put_contents( plugin_dir_path($this->file_name) . "logs/checkbox.log", '');
 
-		    die; 
+		    wp_send_json_success([
+		        'message' => 'Log file cleared successfully.'
+		    ]);
+
+		    wp_die();
 		}
 
 		public function mrkv_checkbox_styles_and_scripts($hook)
