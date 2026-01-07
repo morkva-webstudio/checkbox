@@ -430,6 +430,61 @@ if (!class_exists('MRKV_CHECKBOX_RECEIPT'))
 	                $good['tax'] = $tax_array;
 	            }
 
+	            if ( get_option( 'ppo_barcode' ) ) 
+	            {
+				    $barcode_type = get_option( 'ppo_barcode_type' ); 
+				    $meta_key     = trim( get_option( 'ppo_barcode_from_meta' ) );
+				    $product_id   = $item->get_product_id();
+				    $variation_id = $item->get_variation_id();
+				    $barcode = '';
+
+				    if ( $barcode_type === 'barcode' ) 
+				    {
+				        $barcode = get_post_meta( $product_id, '_global_unique_id', true );
+				        
+				        if ( $variation_id ) {
+				            $variation_barcode = get_post_meta( $variation_id, 'variable_global_unique_id', true );
+				            if ( ! empty( $variation_barcode ) ) {
+				                $barcode = $variation_barcode;
+				            }
+				        }
+				    }
+				    elseif ( $barcode_type === 'meta' && ! empty( $meta_key ) ) 
+				    {
+				        if ( $variation_id ) {
+				            $v = get_post_meta( $variation_id, $meta_key, true );
+				            if ( ! empty( $v ) ) {
+				                $barcode = $v;
+				            }
+				        }
+
+				        if ( empty( $barcode ) ) {
+				            $p = get_post_meta( $product_id, $meta_key, true );
+				            if ( ! empty( $p ) ) {
+				                $barcode = $p;
+				            }
+				        }
+				    }
+				    elseif ( $barcode_type === 'attribute' && ! empty( $meta_key ) ) 
+				    {
+				        $product = wc_get_product( $variation_id ?: $product_id );
+
+				        if ( $product ) 
+				        {
+				            $attr_slug = strtolower( $meta_key );
+				            $value = $product->get_attribute( $attr_slug );
+
+				            if ( ! empty( $value ) ) {
+				                $barcode = $value;
+				            }
+				        }
+				    }
+				    
+				    if ( ! empty( $barcode ) ) {
+				        $good['barcode'] = trim( $barcode );
+				    }
+				}
+
 	            $good_data = array(
 	                'good'     => $good,
 	                'quantity' => (int) ($item->get_quantity() * 1000),
@@ -542,6 +597,19 @@ if (!class_exists('MRKV_CHECKBOX_RECEIPT'))
 
 	        if(class_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled())
     		{
+    			$order_terminal_id = $order->get_meta('_mrkv_liqpay_terminal_id');
+    		}
+    		else
+    		{
+    			$order_terminal_id = get_post_meta( $order->get_id(), '_mrkv_liqpay_terminal_id', true );
+    		}
+
+	        if(isset($order_terminal_id) && $order_terminal_id != ''){
+	        	$payments_data['terminal']   = $order_terminal_id;
+	        }
+
+	        if(class_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled())
+    		{
     			$order_agent_commission = $order->get_meta('_mrkv_liqpay_agent_commission');
     		}
     		else
@@ -567,18 +635,19 @@ if (!class_exists('MRKV_CHECKBOX_RECEIPT'))
 	        	$payments_data['card_mask']   = $order_sender_card_mask;
 	        }
 
-	        if(class_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled())
-    		{
-    			$order_liqpay_order_id = $order->get_meta('_mrkv_liqpay_liqpay_order_id');
-    		}
-    		else
-    		{
-    			$order_liqpay_order_id = get_post_meta( $order->get_id(), '_mrkv_liqpay_liqpay_order_id', true );
-    		}
+	        if(class_exists(OrderUtil::class) && OrderUtil::custom_orders_table_usage_is_enabled()) {
+				$order_liqpay_order_id = $order->get_meta('_mrkv_liqpay_liqpay_order_id');
+				$order_liqpay_rrn_debit = $order->get_meta('_mrkv_liqpay_rrn_debit');
+			} else {
+				$order_liqpay_order_id = get_post_meta($order->get_id(), '_mrkv_liqpay_liqpay_order_id', true);
+				$order_liqpay_rrn_debit = get_post_meta($order->get_id(), '_mrkv_liqpay_rrn_debit', true);
+			}
 
-	        if(isset($order_liqpay_order_id) && $order_liqpay_order_id != ''){
-	        	$payments_data['rrn']   = $order_liqpay_order_id;
-	        }
+			if (!empty($order_liqpay_rrn_debit)) {
+				$payments_data['rrn'] = $order_liqpay_rrn_debit;
+			} elseif (!empty($order_liqpay_order_id)) {
+				$payments_data['rrn'] = $order_liqpay_order_id;
+			}
 
 	        if(class_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled())
     		{
@@ -589,9 +658,19 @@ if (!class_exists('MRKV_CHECKBOX_RECEIPT'))
     			$payment_system = get_post_meta( $order->get_id(), '_mrkv_liqpay_sender_card_type', true );
     		}
 
-	        if(isset($order_liqpay_order_id) && $order_liqpay_order_id != ''){
+	        if (!empty($payment_system)) {
 	        	$payments_data['payment_system']   = $payment_system;
 	        }
+
+	        if(class_exists(OrderUtil::class) && OrderUtil::custom_orders_table_usage_is_enabled()) {
+				$auth_code = $order->get_meta('_mrkv_liqpay_authcode_debit');
+			} else {
+				$auth_code = get_post_meta($order->get_id(), '_mrkv_liqpay_authcode_debit', true);
+			}
+
+			if (!empty($auth_code)) {
+				$payments_data['auth_code'] = $auth_code;
+			}
 
 	        /* MONO Plata */
 
@@ -606,6 +685,19 @@ if (!class_exists('MRKV_CHECKBOX_RECEIPT'))
 
 	        if(isset($order_acq_id) && $order_acq_id != ''){
 	        	$payments_data['acquirer_and_seller']   = $order_acq_id;
+	        }
+
+	        if(class_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled())
+    		{
+    			$order_terminal_id = $order->get_meta('mrkv_mopay_accuiring_terminal');
+    		}
+    		else
+    		{
+    			$order_terminal_id = get_post_meta( $order->get_id(), 'mrkv_mopay_accuiring_terminal', true );
+    		}
+
+	        if(isset($order_terminal_id) && $order_terminal_id != ''){
+	        	$payments_data['terminal']   = $order_terminal_id;
 	        }
 
 	         if(class_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled())
@@ -657,9 +749,19 @@ if (!class_exists('MRKV_CHECKBOX_RECEIPT'))
     			$payment_system = get_post_meta( $order->get_id(), 'mrkv_mopay_accuiring_payment_system', true );
     		}
 
-	        if(isset($order_liqpay_order_id) && $order_liqpay_order_id != ''){
+	        if(!empty($payment_system)){
 	        	$payments_data['payment_system']   = $payment_system;
 	        }
+
+	        if(class_exists(OrderUtil::class) && OrderUtil::custom_orders_table_usage_is_enabled()) {
+				$auth_code = $order->get_meta('mrkv_mopay_accuiring_approval_code');
+			} else {
+				$auth_code = get_post_meta($order->get_id(), 'mrkv_mopay_accuiring_approval_code', true);
+			}
+
+			if (!empty($auth_code)) {
+				$payments_data['auth_code'] = $auth_code;
+			}
 
 	        $params['payments'][] = $payments_data;
 

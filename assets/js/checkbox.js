@@ -18,6 +18,14 @@ jQuery(function($) {
             $('td.skip-receipt-creation input[type=radio]').val('')
         }
     })
+    $('input[name="ppo_barcode"]').on('change', function(e) {
+        if ($(this).is(":checked")) {
+            jQuery('.statuses-ppo_barcode_include').show();
+        }
+        else{
+            jQuery('.statuses-ppo_barcode_include').hide();
+        }
+    });
     if ($('input[name=ppo_autocreate]').is(':checked')) {
         $('select.chosen.order-statuses').chosen({
             width: '300px',

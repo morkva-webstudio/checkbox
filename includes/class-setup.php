@@ -63,7 +63,10 @@ if (!class_exists('MRKV_CHECKBOX_SETUP'))
 	            'ppo_receipt_coupon_text',
 	            'ppo_zero_product_exclude',
 	            'ppo_payment_type_label',
-	            'ppo_payment_type_checkbox'
+	            'ppo_payment_type_checkbox',
+	            'ppo_barcode',
+	            'ppo_barcode_type',
+	            'ppo_barcode_from_meta',
 	        );
 
 	        # Loop of option
@@ -875,6 +878,56 @@ if (!class_exists('MRKV_CHECKBOX_SETUP'))
 	                                <span class="mrkv_checkbox_slider"></span>
 	                            </div>
 	                        </label>
+	                    </div>
+	                    <div class="checkbox-setting-data">
+	                        <p class="checkbox-setting-data-title">
+	                            <?php esc_html_e("Передавати штрихкод товару у чек", 'checkbox'); ?>
+	                        </p>
+	                        <?php
+                        		$ppo_barcode = get_option('ppo_barcode');
+                        		if($ppo_barcode === false)
+                        		{
+                        			$ppo_barcode = 0;
+                        		}
+	                        ?>
+	                        <input class="table_input" type="checkbox" name="ppo_barcode" id="ppo_barcode" value="1" <?php checked($ppo_barcode, 1); ?> />
+	                        <label for="ppo_barcode">
+	                            <div class="mrkv_table-payment__body__checkbox__input">
+	                                <span class="mrkv_checkbox_slider"></span>
+	                            </div>
+	                        </label>
+	                        <div class="statuses-ppo_barcode_include" style="<?php echo ( 1 == get_option('ppo_barcode') ) ? '' : 'display: none;'; ?>">
+                            	<p class="checkbox-setting-data-title"><?php esc_html_e("Тип штрихкоду", 'checkbox'); ?> 
+	                            <span class="tooltip" aria-label="<?php echo esc_html('Оберіть тип штрихкоду у товарі', 'checkbox'); ?>" data-microtip-position="right" role="tooltip"></p>
+	                            	<?php
+	                            		$delivery_types = array(
+	                            			'barcode' => esc_html('Стандартне поле штрихкоду', 'checkbox'),
+	                            			'meta' => esc_html('По ключу мета полю (Внесіть назву метаполя)', 'checkbox'),
+	                            			'attribute' => esc_html('По атрибуту товару (Внесіть slug атрибуту)', 'checkbox')
+	                            		);
+		                                $ppo_delivery_type = (array) get_option('ppo_barcode_type');
+		                                
+		                            ?>
+	                            <select class="chosen product-ppo_barcode_type" name="ppo_barcode_type" data-placeholder="<?php _e('Оберіть тип штрихкоду у товарі', 'checkbox') ?>">
+	                                <option value=""><?php _e('Оберіть тип штрихкоду у товарі', 'checkbox') ?></option>
+	                                <?php
+	                                if (! empty($delivery_types)) :
+	                                    foreach ($delivery_types as $key => $delivery_type) :
+	                                            ?>
+	                                        <option value="<?php echo $key; ?>" <?php  if( $key == $ppo_delivery_type[0] ){ echo  'selected'; }  ?>><?php echo $delivery_type; ?></option>
+	                                            <?php
+	                                        
+	                                    endforeach;
+	                                else :
+	                                    printf('<option value="">%s</option>', __('None'));
+	                                endif;
+	                                ?>
+	                            </select>   
+                            </div>
+                            <div class="checkbox-setting-data statuses-ppo_barcode_include" style="<?php echo ( 1 == get_option('ppo_barcode') ) ? '' : 'display: none;'; ?>">
+	                            <p class="checkbox-setting-data-title"><?php esc_html_e('Ключ поля штрихкоду', 'checkbox'); ?></p>
+	                            <input class="table_input" type="text" name="ppo_barcode_from_meta" value="<?php echo esc_html(get_option('ppo_barcode_from_meta')); ?>" />
+	                        </div>
 	                    </div>
 	                </div>
 	            </div>
