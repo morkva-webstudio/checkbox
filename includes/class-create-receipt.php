@@ -791,6 +791,9 @@ if (!class_exists('MRKV_CHECKBOX_RECEIPT'))
 
 	        # Create result array
 	        $result  = array();
+
+	        $params = apply_filters('mrkv_checkbox_create_receipt_args', $params, $order);
+
 	        # Create receipt
 	        $receipt = $api->createReceipt($params);
 
