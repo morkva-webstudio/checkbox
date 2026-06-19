@@ -1,10 +1,10 @@
-=== Checkbox ===
+=== morkva Checkbox Integration ===
 Contributors: bandido, dpmine
 Tags: woocommerce, Checkbox, РРО
 Requires at least: 5.2
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.1
-Stable tag: 2.8.14
+Stable tag: 3.1.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WooCommerce tested up to: 9.8.0
@@ -14,6 +14,8 @@ WooCommerce tested up to: 9.8.0
 == Description ==
 
 Плагін предає дані з замовлень WooCommerce в сервіс ПРРО Checkbox: створення чека та автоматична фіскалізація.
+
+Сумісний з плагінами: [morkva Plata by Mono Extended](https://wordpress.org/plugins/mrkv-monobank-extended/) та [morkva LiqPay Extended](https://wordpress.org/plugins/mrkv-liqpay-extended/).
 
 **Функціонал плагіна:**
 * Відкриття зміни автоматично згідно правила (але не закриття зміни. Налаштовуйте на стороні кабінета Чекбокс!)
@@ -104,6 +106,33 @@ https://youtu.be/bKNy9Hpe2NI
 
 == Що нового? ==
 
+= 3.1.3 =
+* [new] додали вивід email у чеку
+
+= 3.1.2 =
+* [new] додали отримання актуального статусу зміни на сторінці налаштувань
+* [hotfix] виправили вивід відображення налаштувань оплати
+
+= 3.1.1 =
+* [hotfix] виправили помилку деактивації плагіну
+
+= 3.1.0 =
+* [new] додали відкладення створення при закритій зміні
+* WP 7.0 - сумісний
+
+= 3.0.3 =
+* [fix] виправили тестовий режим
+
+= 3.0.2 =
+* [new] змінили вивід UI/UX платіжних методів morkva
+
+= 3.0.1 =
+* [fix] виправили дрібні помилки в UI/UX
+* [new] додали функціонал автостворення при помилці: 400 Зміну відкрито понад 24 години тому
+
+= 3.0.0 =
+* [new] оновили UI
+
 = 2.8.14 =
 * [new] додали фільтр аргументів створення чеку mrkv_checkbox_create_receipt_args
 
@@ -174,7 +203,7 @@ https://youtu.be/bKNy9Hpe2NI
 * WP 6.5 - сумісний
 
 = 2.5.0 =
-* [new] додаємо параметри ЕПЗ до чеку (актуально лише для плагінів Morkva LiqPay i Morkva Plata by mono)
+* [new] додаємо параметри ЕПЗ до чеку (актуально лише для плагінів morkva LiqPay i morkva Plata by mono)
 
 = 2.4.0 =
 * [new] змінили назву плагіна
