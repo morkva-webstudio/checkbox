@@ -34,7 +34,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_ACTIVATION_DEACTIVATION' ) ) {
          * Triggered after plugin update.
          */
         public function mrkv_checkbox_upgrade( $upgrader_object, $options ) {
-            $current_plugin = plugin_basename( __FILE__ );
+            $current_plugin = plugin_basename( dirname( plugin_dir_path( __FILE__ ), 3 ) . '/checkbox.php' );
 
             if ( isset( $options['action'], $options['type'], $options['plugins'] ) && 
                  $options['action'] === 'update' && 
