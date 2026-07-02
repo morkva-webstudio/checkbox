@@ -390,8 +390,8 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
 
         private function add_delivery($params) {
             $delivery = [];
-            if ($this->get_setting('email', 'receipt_added', 'ppo_receipt_send_email')) {
-                $delivery['email'] = $this->order->get_billing_email() ?: wp_get_current_user()->user_email;
+            if ($this->get_setting('email', 'receipt_added', 'ppo_receipt_send_email') && $this->order->get_billing_email()) {
+                $delivery['email'] = $this->order->get_billing_email();
             }
             if ($delivery) $params['delivery'] = $delivery;
             return $params;
