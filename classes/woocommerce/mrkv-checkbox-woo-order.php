@@ -115,19 +115,21 @@ if (!class_exists('MRKV_CHECKBOX_WOO_ORDER')) {
             ?>
             <div class="mrkv_checkbox_create_receipt_form">
                 <?php if (!empty($cashiers)) : ?>
+                    <?php $mrkv_checkbox_counter_cashbox = 1; ?>
                     <label for="mrkv_checkbox_cashiers"><?php esc_html_e('Select Cashbox', 'checkbox'); ?></label>
                     <select name="mrkv_checkbox_cashiers" id="mrkv_checkbox_cashiers" style="width:100%; margin:5px 0 10px; display:none;">
                         <?php foreach ($cashiers as $slug => $data) : ?>
                             <option value="<?php echo esc_attr($slug); ?>">
                                 <?php 
-                                    if (isset($data['register_name'])) {
+                                    if (isset($data['register_name']) && $data['register_name']) {
                                         echo esc_html($data['register_name']);
                                     } else {
                                         /* translators: %s: Cashbox slug */
-                                        printf(esc_html__('Cashbox %s', 'checkbox'), esc_html($slug));
+                                        printf(esc_html__('Cashbox %s', 'checkbox'), esc_html($mrkv_checkbox_counter_cashbox));
                                     }
                                 ?>
                             </option>
+                            <?php ++$mrkv_checkbox_counter_cashbox; ?>
                         <?php endforeach; ?>
                     </select>
                 <?php endif; ?>
