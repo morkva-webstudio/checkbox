@@ -10,7 +10,7 @@
 					<img src="<?php echo esc_url(MRKV_CHECKBOX_IMG_URL . '/global/morkva-minilogo.svg'); ?>" alt="Checkbox" title="Checkbox">
 				</a>
 				<a class="active" href="<?php echo esc_url($mrkv_checkbox_current_page); ?>"><?php echo esc_html__('Settings', 'checkbox'); ?></a>
-				<a class="admin_mrkv_ua_shipping_morkva-logo" href="https://morkva.co.ua/" target="blanc">
+				<a class="admin_mrkv_ua_shipping_morkva-logo" href="https://morkva.co.ua/" target="_blank">
 					<img src="<?php echo esc_url(MRKV_CHECKBOX_IMG_URL . '/global/morkva-logo.svg'); ?>" alt="morkva" title="morkva">
 				</a>
 			</div>
@@ -917,9 +917,9 @@
 						<img src="<?php echo esc_url(MRKV_CHECKBOX_IMG_URL . '/global/star.svg'); ?>" alt="Star" alt="Star">
 						<img src="<?php echo esc_url(MRKV_CHECKBOX_IMG_URL . '/global/star.svg'); ?>" alt="Star" alt="Star">
 						<?php echo esc_html__( 'review at', 'checkbox' ); ?>
-						<a href="https://wordpress.org/plugins/checkbox/" target="blanc">WordPress.org</a>
+						<a href="https://wordpress.org/plugins/checkbox/" target="_blank">WordPress.org</a>
 					</p>
-					<a class="button button-primary mrkv-btn-sidebar-main" href="https://wordpress.org/plugins/checkbox/" target="blanc">
+					<a class="button button-primary mrkv-btn-sidebar-main" href="https://wordpress.org/plugins/checkbox/" target="_blank">
 						<?php echo esc_html__( 'Leave', 'checkbox' ) . ' '; ?>
 						<img src="<?php echo esc_url(MRKV_CHECKBOX_IMG_URL . '/global/star.svg'); ?>" alt="Star" alt="Star">
 						<img src="<?php echo esc_url(MRKV_CHECKBOX_IMG_URL . '/global/star.svg'); ?>" alt="Star" alt="Star">
@@ -931,13 +931,13 @@
 						<?php echo esc_html__( 'Isn’t good enough for a 5', 'checkbox' ) . ' '; ?>
 						<img src="<?php echo esc_url(MRKV_CHECKBOX_IMG_URL . '/global/star.svg'); ?>" alt="Star" alt="Star">? 
 						<?php echo esc_html__( 'Contact us via the widget on our website, or check out', 'checkbox' ) . ' '; ?>
-						<a href="https://docs.morkva.co.ua/uk?utm_source=plugin&utm_medium=sidebar&utm_campaign=checkbox_free" target="blanc"><?php echo esc_html__( 'documantation', 'checkbox' ); ?></a>
+						<a href="https://docs.morkva.co.ua/uk?utm_source=plugin&utm_medium=sidebar&utm_campaign=checkbox_free" target="_blank"><?php echo esc_html__( 'documantation', 'checkbox' ); ?></a>
 					</p>
 					<div class="mrkv-btns-line-sidebar" style="display: flex;gap: 4px;">
-						<a class="button mrkv-btn-sidebar-black" href="https://morkva.co.ua/?utm_source=plugin&utm_medium=sidebar&utm_campaign=checkbox_free" target="blanc">
+						<a class="button mrkv-btn-sidebar-black" href="https://morkva.co.ua/?utm_source=plugin&utm_medium=sidebar&utm_campaign=checkbox_free" target="_blank">
 							<?php echo esc_html__( 'Go to the website', 'checkbox' ); ?>
 						</a>
-						<a class="button mrkv-btn-sidebar-black" href="https://docs.morkva.co.ua/uk?utm_source=plugin&utm_medium=sidebar&utm_campaign=checkbox_free" target="blanc">
+						<a class="button mrkv-btn-sidebar-black" href="https://docs.morkva.co.ua/uk?utm_source=plugin&utm_medium=sidebar&utm_campaign=checkbox_free" target="_blank">
 							<?php echo esc_html__( 'Documantation', 'checkbox' ); ?>
 						</a>
 					</div>
@@ -977,7 +977,7 @@
 						</li>
 						<li><?php echo esc_html__( 'and more', 'checkbox' ); ?></li>
 					</ul>
-					<a class="button button-primary mrkv-btn-sidebar-main" href="https://morkva.co.ua/shop/woocommerce-checkbox-pro/?utm_source=plugin&utm_medium=sidebar&utm_campaign=checkbox_free" target="blanc">
+					<a class="button button-primary mrkv-btn-sidebar-main" href="https://morkva.co.ua/shop/woocommerce-checkbox-pro/?utm_source=plugin&utm_medium=sidebar&utm_campaign=checkbox_free" target="_blank">
 						<?php echo esc_html__( 'Buy Pro-version', 'checkbox' ); ?>
 					</a>
 				</div>
@@ -986,17 +986,37 @@
 				<div class="admin_mrkv_ua_shipping__plugin__support">
 					<h2><?php echo esc_html__('Other free plugins', 'checkbox'); ?></h2>
 					<?php
-						$mrkv_checkbox_response = wp_remote_get( 'https://morkva.co.ua/wp-json/pluginManagement/v2', array(
-							'headers' => array(
-							),
-							'timeout' => 30,
-							'redirection' => 5,
-							'httpversion' => '1.1',
-							'sslverify' => true
-						));
+						$mrkv_checkbox_transient_key = 'morkva_plugin_management_data';
+						$mrkv_checkbox_cached_data = get_transient( $mrkv_checkbox_transient_key );
+						if ( false !== $mrkv_checkbox_cached_data ) {
+							$mrkv_checkbox_data = ( 'error' === $mrkv_checkbox_cached_data ) ? false : $mrkv_checkbox_cached_data;
+						} else {
+							
+							$mrkv_checkbox_response = wp_remote_get( 'https://morkva.co.ua/wp-json/pluginManagementPro/v2', array(
+								'headers'     => array(),
+								'timeout'     => 6,
+								'redirection' => 5,
+								'httpversion' => '1.1',
+								'sslverify'   => true,
+							) );
 
-						$mrkv_checkbox_response_data = $mrkv_checkbox_response['body'] ? json_decode( $mrkv_checkbox_response['body'], true ) : null;
-						$mrkv_checkbox_plugins = $mrkv_checkbox_response_data['plugins'] ?? [];
+							if ( is_wp_error( $mrkv_checkbox_response ) || 200 !== wp_remote_retrieve_response_code( $mrkv_checkbox_response ) ) {
+								set_transient( $mrkv_checkbox_transient_key, 'error', HOUR_IN_SECONDS );
+								$mrkv_checkbox_data = false;
+							} else {
+								$mrkv_checkbox_body = wp_remote_retrieve_body( $mrkv_checkbox_response );
+								$mrkv_checkbox_data = json_decode( $mrkv_checkbox_body, true );
+
+								if ( empty( $mrkv_checkbox_data ) || ! is_array( $mrkv_checkbox_data ) ) {
+									set_transient( $mrkv_checkbox_transient_key, 'error', HOUR_IN_SECONDS );
+									$mrkv_checkbox_data = false;
+								} else {
+									set_transient( $mrkv_checkbox_transient_key, $mrkv_checkbox_data, 12 * HOUR_IN_SECONDS );
+								}
+							}
+						}
+
+						$mrkv_checkbox_plugins = ( is_array( $mrkv_checkbox_data ) && isset( $mrkv_checkbox_data['plugins'] ) ) ? $mrkv_checkbox_data['plugins'] : [];
 
 						if(!empty($mrkv_checkbox_plugins))
 						{
@@ -1007,7 +1027,7 @@
 										{
 											if($mrkv_checkbox_plugin_slug == 'checkbox'){ continue; }
 											?>
-												<li><a style="display:block; margin-bottom:5px;" href="<?php echo esc_attr($mrkv_checkbox_plugin_data['url'] ?? ''); ?>" target="blanc" class="plugin_line"><?php echo esc_attr($mrkv_checkbox_plugin_data['label'] ?? ''); ?></a></li>
+												<li><a style="display:block; margin-bottom:5px;" href="<?php echo esc_attr($mrkv_checkbox_plugin_data['url'] ?? ''); ?>" target="_blank" class="plugin_line"><?php echo esc_attr($mrkv_checkbox_plugin_data['label'] ?? ''); ?></a></li>
 											<?php
 										}
 									?>
