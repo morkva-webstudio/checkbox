@@ -44,8 +44,8 @@ if ( ! class_exists( 'MRKV_CHECKBOX_OLD_CHECKER' ) ) {
          * Consolidate all legacy options into the new structured array
          */
         public function update_new_settings_with_old_data() {
-            $new_settings = [];
-            $new_settings['cashiers']['default'] = $this->mrkv_checkbox_get_default_cashbox() ?: [];
+            $mrkv_checkbox_new_settings = [];
+            $mrkv_checkbox_new_settings['cashiers']['default'] = $this->mrkv_checkbox_get_default_cashbox() ?: [];
             $mrkv_checkbox_new_settings['added_fields']['description'] = get_option('ppo_receipt_footer') ?? '';
             $mrkv_checkbox_new_settings['automation']['open_shift'] = get_option('ppo_autoopen_shift') ? 'on' : '';
             $mrkv_checkbox_new_settings['discount']['label'] = get_option('ppo_receipt_coupon_text') ?? '';
