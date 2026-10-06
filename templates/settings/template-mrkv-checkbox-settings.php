@@ -75,15 +75,15 @@
 																		<img src="<?php echo esc_url(MRKV_CHECKBOX_IMG_URL . '/global/pin.svg'); ?>" alt="Cashier Settings" title="Cashier Settings">
 																		<div class="mrkv_checkbox__shift__number"><?php echo esc_attr((int) $mrkv_checkbox_cashier_counter); ?></div>
 																		<div class="mrkv_checkbox__shift__name"><?php echo esc_attr($mrkv_checkbox_cashier['register_name'] ?? ''); ?></div>
-																		<div class="mrkv_checkbox__shift__status <?php echo esc_attr($mrkv_checkbox_cashier['shift_status']); ?>" data-contraryopen="<?php echo esc_html__('Opened', 'checkbox'); ?>" data-contraryclose="<?php echo esc_html__('Closed', 'checkbox'); ?>">
+																		<div class="mrkv_checkbox__shift__status <?php echo esc_attr($mrkv_checkbox_cashier['shift_status'] ?? ''); ?>" data-contraryopen="<?php echo esc_html__('Opened', 'checkbox'); ?>" data-contraryclose="<?php echo esc_html__('Closed', 'checkbox'); ?>">
 																			<?php
-																				echo esc_attr($mrkv_checkbox_cashier['shift_status'] == 'closed' ? esc_html__('Closed', 'checkbox') : esc_html__('Opened', 'checkbox'));
+																				echo esc_attr(($mrkv_checkbox_cashier['shift_status']  ?? '') == 'closed' ? esc_html__('Closed', 'checkbox') : esc_html__('Opened', 'checkbox'));
 																			?>
 																		</div>
 																		<div class="mrkv_checkbox__shift__action">
 																			<div class="mrkv_checkbox__change_shift_status">
 																				<?php 
-																					if($mrkv_checkbox_cashier['shift_status'] == 'closed')
+																					if( ($mrkv_checkbox_cashier['shift_status']  ?? '') == 'closed')
 																					{
 																						?>
 																						<div class="mrkv_checkbox__change_shift_status" data-status="open" data-cashbox="<?php echo esc_attr($mrkv_checkbox_cashier_id); ?>" data-contraryclose="<?php echo esc_html__('Close Shift', 'checkbox'); ?>" data-contraryopen="<?php echo esc_html__('Open Shift', 'checkbox'); ?>"><?php echo esc_html__('Open Shift', 'checkbox'); ?>

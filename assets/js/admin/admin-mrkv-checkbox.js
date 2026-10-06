@@ -70,29 +70,47 @@ jQuery(window).on('load', function()
         $parentBlock.find('input[type="hidden"][name*="[signin]"]').val('');
     });
 
+    jQuery(document).on('paste', '.mrkv-fake-password', function(e) {
+        var $fakeInput = jQuery(this);
+        var $wrapper = $fakeInput.closest('.mrkv-password-mask-wrapper');
+        var $realInput = $wrapper.find('.mrkv-real-password');
+
+        var pastedData = (e.originalEvent.clipboardData || window.clipboardData).getData('text');
+        
+        var startPos = $fakeInput[0].selectionStart;
+        var endPos = $fakeInput[0].selectionEnd;
+
+        if (startPos === 0 && endPos === $fakeInput.val().length) {
+            $realInput.val(pastedData);
+        } else {
+            var currentReal = $realInput.val();
+            var newReal = currentReal.substring(0, startPos) + pastedData + currentReal.substring(endPos);
+            $realInput.val(newReal);
+        }
+
+        setTimeout(function() {
+            var realVal = $realInput.val();
+            if (realVal.length > 4) {
+                var dots = "•".repeat(realVal.length - 4);
+                var lastFour = realVal.substring(realVal.length - 4);
+                $fakeInput.val(dots + lastFour);
+            } else {
+                $fakeInput.val(realVal);
+            }
+        }, 10);
+    });
+
     jQuery(document).on('input', '.mrkv-fake-password', function(e) {
         var $fakeInput = jQuery(this);
         var $wrapper = $fakeInput.closest('.mrkv-password-mask-wrapper');
         var $realInput = $wrapper.find('.mrkv-real-password');
         
         var currentFake = $fakeInput.val();
-        var realVal = $realInput.val();
-
-        if (currentFake.length > realVal.length) {
-            var addedStr = currentFake.substr(realVal.length);
-            realVal += addedStr;
-        } 
-        else if (currentFake.length < realVal.length) {
-            realVal = realVal.substring(0, currentFake.length);
-        }
         
-        $realInput.val(realVal);
-        if (realVal.length > 4) {
-            var dots = "•".repeat(realVal.length - 4);
-            var lastFour = realVal.substring(realVal.length - 4);
-            $fakeInput.val(dots + lastFour);
-        } else {
-            $fakeInput.val(realVal);
+        if (currentFake.includes('•')) {
+            var realVal = $realInput.val();
+            if (currentFake.length < ($realInput.val().length > 4 ? $realInput.val().length : 0)) {
+            }
         }
     });
 
