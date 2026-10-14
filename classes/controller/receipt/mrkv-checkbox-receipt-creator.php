@@ -163,7 +163,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                 return false;
             }
 
-            $request_result = $api->mrkv_checkbox_make_request('POST', '/api/v1/receipts/sell', $args);
+            $request_result = $api->mrkv_checkbox_make_request('POST', '/api/v1/receipts/sell', $args, '', $this->order->get_id());
 
             if (isset($request_result['error']) && isset($request_result['status_code']) && $request_result['status_code'] == 400 && $this->get_setting('automation', 'open_shift', 'ppo_autoopen_shift')) 
             {
@@ -239,7 +239,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                     update_option('mrkv_checkbox', $this->settings_data);
                 }
                 
-                $request_result = $api->mrkv_checkbox_make_request('POST', '/api/v1/receipts/sell', $args);
+                $request_result = $api->mrkv_checkbox_make_request('POST', '/api/v1/receipts/sell', $args, '', $this->order->get_id());
             }
 
             if (isset($request_result['error'])) {
@@ -265,9 +265,19 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
         }
 
         private function handle_api_error($result) {
+            $log_handle = 'mrkv-checkbox';
+            $file_path  = wc_get_log_file_path($log_handle);
+
+            if ($file_path) {
+                $file_id = basename($file_path, '.log');
+                $url = admin_url('admin.php?page=wc-status&tab=logs&view=single_file&file_id=' . $file_id);
+            } else {
+                $url = admin_url('admin.php?page=wc-status&tab=logs');
+            }
+
             // translators: 1: HTTP status code or N/A, 2: Error message from Checkbox API.
             $msg_text = '[morkva] ' . __( 'Checkbox API Error (%1$s): %2$s', 'checkbox' );
-            $msg = sprintf( $msg_text, $result['status_code'] ?? 'N/A', $result['error'] . ' <a href="' . admin_url('admin.php?page=mrkv_checkbox_settings#log-mrkv') . '" target="_blank">' . __( 'Log', 'checkbox' ) . '</a>');
+            $msg = sprintf( $msg_text, $result['status_code'] ?? 'N/A', $result['error'] . ' <a href="' . $url . '" target="_blank">' . __( 'Log', 'checkbox' ) . '</a>');
 
             $this->order->add_order_note($msg);
             $this->order->save();
@@ -287,7 +297,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
 
                 $subtotal = (float) $item->get_subtotal();
                 $quantity = (float) $item->get_quantity();
-                $unit_price = $subtotal / max(1, $quantity);
+                $unit_price = $subtotal / max(0.01, $quantity);
 
                 if ($exclude_zero && $unit_price <= 0) continue;
 

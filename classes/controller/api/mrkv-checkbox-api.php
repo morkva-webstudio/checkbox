@@ -33,7 +33,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_API' ) ) {
         /**
          * Perform a request to the Checkbox API.
          */
-        public function mrkv_checkbox_make_request( string $method, string $route, array $params = [], string $type = '' ) {
+        public function mrkv_checkbox_make_request( string $method, string $route, array $params = [], string $type = '', string $order_id = '' ) {
             $base_url = self::API_URL;
             $url      = $base_url . $route;
             $method   = strtoupper( $method );
@@ -77,7 +77,8 @@ if ( ! class_exists( 'MRKV_CHECKBOX_API' ) ) {
                 $this->logger->add_data_request( [
                     'url'    => $url,
                     'method' => $method,
-                    'args'   => $args
+                    'args'   => $args,
+                    'order_id' => $order_id
                 ] );
             }
 
@@ -88,7 +89,8 @@ if ( ! class_exists( 'MRKV_CHECKBOX_API' ) ) {
             if ( is_wp_error( $response ) ) {
                 $error_data = [ 
                     'error'  => $response->get_error_message(), 
-                    'status' => 'transport_error' 
+                    'status' => 'transport_error',
+                    'order_id' => $order_id
                 ];
 
                 if ( $this->logger ) {
@@ -112,10 +114,11 @@ if ( ! class_exists( 'MRKV_CHECKBOX_API' ) ) {
             // 6. Process API-level Errors (4xx, 5xx)
             if ( $status_code >= 400 ) {
                 $error_result = [
-                    'error'       => $data['message'] ?? wp_remote_retrieve_response_message( $response ),
+                    'error'       => $this->extract_error_message( $data, $response, $status_code ),
                     'status_code' => $status_code,
                     'details'     => $data['errors'] ?? ( $data['detail'] ?? [] ),
-                    'raw_body'    => $body
+                    'raw_body'    => $body,
+                    'order_id'    => $order_id
                 ];
                 
                 if ( $this->logger ) {
@@ -134,6 +137,19 @@ if ( ! class_exists( 'MRKV_CHECKBOX_API' ) ) {
             do_action( 'mrkv_checkbox_api_success', $data, $route );
 
             return is_array( $data ) ? $data : [];
+        }
+
+        private function extract_error_message( $data, $response, $status_code ) {
+            $candidates = is_array( $data ) ? [ $data['message'] ?? '', $data['title'] ?? '', $data['detail'] ?? '' ] : [];
+            $candidates[] = wp_remote_retrieve_response_message( $response );
+
+            foreach ( $candidates as $candidate ) {
+                if ( is_string( $candidate ) && trim( $candidate ) !== '' ) {
+                    return $candidate;
+                }
+            }
+
+            return 'HTTP ' . $status_code;
         }
     }
 }

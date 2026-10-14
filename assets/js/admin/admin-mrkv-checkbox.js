@@ -31,11 +31,14 @@ if(hash)
 {
         var tab_main = hash.replace('-mrkv','');
         tab_main = tab_main.replace('#','');
-        jQuery('.admin_mrkv_ua_shipping__tabs_main__inner .active').removeClass('active');
-        jQuery('.mrkv_up_ship_tab_btn[data-tab="' + tab_main + '"]').addClass('active');
+        if(/^[\w-]+$/.test(tab_main) && jQuery('.mrkv_up_ship_tab_btn[data-tab="' + tab_main + '"]').length)
+        {
+                jQuery('.admin_mrkv_ua_shipping__tabs_main__inner .active').removeClass('active');
+                jQuery('.mrkv_up_ship_tab_btn[data-tab="' + tab_main + '"]').addClass('active');
 
-        jQuery('.mrkv_up_ship_shipping_tab_block').removeClass('active');
-        jQuery('#' + tab_main).addClass('active');
+                jQuery('.mrkv_up_ship_shipping_tab_block').removeClass('active');
+                jQuery('#' + tab_main).addClass('active');
+        }
 }
 
 jQuery(window).on('load', function() 
