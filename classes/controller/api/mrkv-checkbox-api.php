@@ -77,7 +77,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_API' ) ) {
                 $this->logger->add_data_request( [
                     'url'    => $url,
                     'method' => $method,
-                    'args'   => $args,
+                    'args'   => $this->mask_secrets( $args ),
                     'order_id' => $order_id
                 ] );
             }
@@ -137,6 +137,25 @@ if ( ! class_exists( 'MRKV_CHECKBOX_API' ) ) {
             do_action( 'mrkv_checkbox_api_success', $data, $route );
 
             return is_array( $data ) ? $data : [];
+        }
+
+        /**
+         * Copy of the request args for the log: tokens, license key and cashier password hidden.
+         */
+        private function mask_secrets( array $args ): array {
+            foreach ( [ 'Authorization', 'X-License-Key' ] as $header ) {
+                if ( ! empty( $args['headers'][ $header ] ) ) {
+                    $args['headers'][ $header ] = '***' . substr( (string) $args['headers'][ $header ], -4 );
+                }
+            }
+
+            $body = isset( $args['body'] ) && is_string( $args['body'] ) ? json_decode( $args['body'], true ) : null;
+            if ( is_array( $body ) && isset( $body['password'] ) ) {
+                $body['password'] = '***';
+                $args['body']     = json_encode( $body );
+            }
+
+            return $args;
         }
 
         private function extract_error_message( $data, $response, $status_code ) {
