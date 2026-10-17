@@ -275,12 +275,31 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                 $url = admin_url('admin.php?page=wc-status&tab=logs');
             }
 
+            $error = $result['error'];
+            if ($details = $this->format_api_error_details($result['details'] ?? [])) $error .= ' (' . $details . ')';
+
             // translators: 1: HTTP status code or N/A, 2: Error message from Checkbox API.
             $msg_text = '[morkva] ' . __( 'Checkbox API Error (%1$s): %2$s', 'checkbox' );
-            $msg = sprintf( $msg_text, $result['status_code'] ?? 'N/A', $result['error'] . ' <a href="' . $url . '" target="_blank">' . __( 'Log', 'checkbox' ) . '</a>');
+            $msg = sprintf( $msg_text, $result['status_code'] ?? 'N/A', esc_html($error) . ' <a href="' . esc_url($url) . '" target="_blank">' . __( 'Log', 'checkbox' ) . '</a>');
 
             $this->order->add_order_note($msg);
             $this->order->save();
+        }
+
+        /**
+         * Field and reason from Checkbox "detail", e.g. "delivery.email: value is not a valid email address".
+         */
+        private function format_api_error_details($details) {
+            if (!is_array($details)) return '';
+
+            $lines = [];
+            foreach (array_slice($details, 0, 3) as $detail) {
+                if (!is_array($detail) || empty($detail['msg']) || !is_string($detail['msg'])) continue;
+                $loc = array_diff((array) ($detail['loc'] ?? []), ['body']);
+                $lines[] = ($loc ? implode('.', $loc) . ': ' : '') . $detail['msg'];
+            }
+
+            return implode('; ', $lines);
         }
 
         public function get_goods()
