@@ -364,17 +364,30 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
         }
 
         private function get_product_barcode($item) {
-            if (!$this->get_setting('barcode', 'enabled', 'ppo_barcode')) return '';
-            $type = $this->get_setting('barcode', 'type', 'ppo_barcode_type');
-            $meta_key = $this->get_setting('barcode', 'title', 'ppo_barcode_from_meta');
-            $target_id = $item->get_variation_id() ?: $item->get_product_id();
+            if (!$this->get_setting('added_fields', 'barcode', 'ppo_barcode')) return '';
+
+            // The 3.x settings page has no barcode source fields; sites migrated from 2.x keep these options.
+            $type = get_option('ppo_barcode_type') ?: 'barcode';
+            $meta_key = trim((string) get_option('ppo_barcode_from_meta'));
+            $product_id = $item->get_product_id();
+            $variation_id = $item->get_variation_id();
+            $barcode = '';
 
             switch ($type) {
-                case 'barcode': return $this->order->get_meta('_global_unique_id');
-                case 'meta': return $meta_key ? get_post_meta($target_id, $meta_key, true) : '';
-                case 'attribute': return $meta_key ? $item->get_product()->get_attribute($meta_key) : '';
-                default: return '';
+                case 'barcode':
+                    // WooCommerce 9.2+ "GTIN, UPC, EAN or ISBN" field; a variation without its own value uses the parent's.
+                    $barcode = ($variation_id ? get_post_meta($variation_id, '_global_unique_id', true) : '') ?: get_post_meta($product_id, '_global_unique_id', true);
+                    break;
+                case 'meta':
+                    if ($meta_key) $barcode = ($variation_id ? get_post_meta($variation_id, $meta_key, true) : '') ?: get_post_meta($product_id, $meta_key, true);
+                    break;
+                case 'attribute':
+                    $product = $item->get_product();
+                    if ($meta_key && $product) $barcode = $product->get_attribute($meta_key);
+                    break;
             }
+
+            return is_scalar($barcode) ? trim((string) $barcode) : '';
         }
 
         private function check_order_total($params) {
