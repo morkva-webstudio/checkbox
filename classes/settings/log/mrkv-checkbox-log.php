@@ -32,13 +32,12 @@ if ( ! class_exists( 'MRKV_CHECKBOX_LOG' ) ) {
         }
 
         /**
-         * Log error data.
+         * Log error data. Always written: without it the reason of a failed receipt is lost
+         * when the debug log is off. The debug toggle only adds requests and action messages.
          * * @param mixed $error Data to log.
          */
         public function add_data_error( $error ) {
-            if ( $this->active_log ) {
-                $this->write_to_log( 'error', $error );
-            }
+            $this->write_to_log( 'error', $error );
         }
 
         /**
