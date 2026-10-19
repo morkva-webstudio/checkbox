@@ -37,12 +37,12 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
         }
 
         /**
-         * Main entry point to create receipts with support for Prepay/Afterpay
-         * * @param string $type 'sell', 'prepay', or 'afterpay'
-         * @param float|int $pay_amount Amount for partial payments
+         * Main entry point to create a sell receipt for the order.
          */
         public function create_receipt()
         {
+            $type = 'sell';
+
             if (!$this->cashbox_data) {
                 $this->order->add_order_note('[morkva] Checkbox ' . __('Error: Cashbox data empty', 'checkbox'));
                 $this->order->save();
@@ -58,7 +58,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
             $args = $this->add_delivery($args);
             $args = $this->check_order_total($args);
             $args = $this->add_payment_data($args);
-            $args = $this->add_footer_data($args, $type);
+            $args = $this->add_footer_data($args);
 
             $args = apply_filters('mrkv_checkbox_create_receipt_args', $args, $this->order);
 
