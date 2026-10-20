@@ -4,7 +4,7 @@ Tags: woocommerce, Checkbox, РРО
 Requires at least: 5.2
 Tested up to: 7.1
 Requires PHP: 7.1
-Stable tag: 3.1.11
+Stable tag: 3.1.12
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 WooCommerce tested up to: 9.8.0
@@ -105,6 +105,13 @@ https://youtu.be/bKNy9Hpe2NI
 Робочі години з 10:00 до 19:00 ПН-ПТ. Ми відповімо вам протягом доби в робочий час. Всі звернення опрацьовуються по черзі.
 
 == Що нового? ==
+
+= 3.1.12 =
+* [new] додали перевірку формату email 
+* [fix] виправили токен, ключ каси і пароль касира у журналі WooCommerce 
+* [fix] виправили помилку Undefined variable $type
+* [fix] виправили передачу штрихкода товару
+* [fix] виправили запис логу 
 
 = 3.1.11 =
 * [new] змінили метод заокруглення кількості 
