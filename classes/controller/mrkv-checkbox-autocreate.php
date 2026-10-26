@@ -63,6 +63,27 @@ if ( ! class_exists( 'MRKV_CHECKBOX_AUTOCREATE' ) ) {
                 return ( $current_time >= $start_restrict || $current_time <= $end_restrict );
             }
         }
+
+        /**
+         * Real (UTC) timestamp of the next end of the restricted window in the site timezone.
+         * Action Scheduler expects a UTC timestamp, current_time( 'timestamp' ) is shifted by the site offset.
+         */
+        public function get_restrict_end_timestamp() {
+            $end_restrict = apply_filters( 'mrkv_checkbox_restrict_end_time', '00:05' );
+            $timezone     = wp_timezone();
+            $now          = new DateTime( 'now', $timezone );
+            $target       = date_create( 'today ' . $end_restrict, $timezone );
+
+            if ( ! $target ) {
+                return $now->getTimestamp();
+            }
+
+            if ( $target <= $now ) {
+                $target = date_create( 'tomorrow ' . $end_restrict, $timezone );
+            }
+
+            return $target->getTimestamp();
+        }
         
         /**
          * Main hook for status changes.
@@ -87,12 +108,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_AUTOCREATE' ) ) {
 
             if ( $this->is_time_restricted() ) {
                 if ( class_exists( 'ActionScheduler' ) ) {
-                    $end_restrict = apply_filters( 'mrkv_checkbox_restrict_end_time', '00:05' );
-                    $target_time = strtotime( 'today ' . $end_restrict, current_time( 'timestamp' ) );
-                    
-                    if ( $target_time <= current_time( 'timestamp' ) ) {
-                        $target_time = strtotime( 'tomorrow ' . $end_restrict, current_time( 'timestamp' ) );
-                    }
+                    $target_time = $this->get_restrict_end_timestamp();
 
                     if ( ! as_next_scheduled_action( 'mrkv_checkbox_create_delayed_receipt_action', [ 'order_id' => $order_id ] ) ) {
                         as_schedule_single_action( $target_time, 'mrkv_checkbox_create_delayed_receipt_action', [ 'order_id' => $order_id ] );

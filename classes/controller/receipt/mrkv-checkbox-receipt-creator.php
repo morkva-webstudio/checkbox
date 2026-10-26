@@ -102,7 +102,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                         $this->settings_data['cashiers'][$this->cashbox_id]['shift_status'] = 'opened';
                     }
                     $has_settings_change = true;
-                    sleep(8);
+                    $this->wait_for_shift_opened($api);
                 }
                 elseif(! empty( $result['status_code'] ) && $result['status_code'] == 401)
                 {
@@ -137,7 +137,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                             $this->settings_data['cashiers'][$this->cashbox_id]['shift_status'] = 'opened';
                         }
                         $has_settings_change = true;
-                        sleep(8);
+                        $this->wait_for_shift_opened($api);
                     }
                     else {
                         $this->order->add_order_note('[morkva] Checkbox ' . __('Error:', 'checkbox') . ' ' . ($result['message'] ?? 'Shift failed to open'));
@@ -183,7 +183,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                         $this->settings_data['cashiers'][$this->cashbox_id]['shift_status'] = 'opened';
                     }
                     $has_settings_change = true;
-                    sleep(8);
+                    $this->wait_for_shift_opened($api);
                 }
                 elseif(! empty( $result['status_code'] ) && $result['status_code'] == 401)
                 {
@@ -221,7 +221,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                             $this->settings_data['cashiers'][$this->cashbox_id]['shift_status'] = 'opened';
                         }
                         $has_settings_change = true;
-                        sleep(8);
+                        $this->wait_for_shift_opened($api);
                     }
                     else {
                         $this->order->add_order_note('[morkva] Checkbox ' . __('Error:', 'checkbox') . ' ' . ($result['message'] ?? 'Shift failed to open'));
@@ -260,6 +260,28 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                 $this->order->save();
                 return $request_result;
             }
+
+            return false;
+        }
+
+        /**
+         * Checkbox opens a shift asynchronously (POST /shifts → 202), sometimes longer than a fixed pause.
+         * Poll the cashier's current shift until it is OPENED, give up after the timeout (filter, seconds).
+         */
+        private function wait_for_shift_opened($api) {
+            $timeout  = (int) apply_filters('mrkv_checkbox_shift_open_timeout', 30);
+            $interval = max(0, (int) apply_filters('mrkv_checkbox_shift_open_poll_interval', 2));
+            $waited   = 0;
+
+            do {
+                sleep($interval);
+                $waited += max(1, $interval);
+
+                $shift = $api->mrkv_checkbox_make_request('GET', '/api/v1/cashier/shift');
+                if (strtoupper($shift['status'] ?? '') === 'OPENED') {
+                    return true;
+                }
+            } while ($waited < $timeout);
 
             return false;
         }
