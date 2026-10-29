@@ -102,7 +102,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                         $this->settings_data['cashiers'][$this->cashbox_id]['shift_status'] = 'opened';
                     }
                     $has_settings_change = true;
-                    sleep(8);
+                    $this->wait_for_shift_opened($api);
                 }
                 elseif(! empty( $result['status_code'] ) && $result['status_code'] == 401)
                 {
@@ -137,7 +137,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                             $this->settings_data['cashiers'][$this->cashbox_id]['shift_status'] = 'opened';
                         }
                         $has_settings_change = true;
-                        sleep(8);
+                        $this->wait_for_shift_opened($api);
                     }
                     else {
                         $this->order->add_order_note('[morkva] Checkbox ' . __('Error:', 'checkbox') . ' ' . ($result['message'] ?? 'Shift failed to open'));
@@ -183,7 +183,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
                         $this->settings_data['cashiers'][$this->cashbox_id]['shift_status'] = 'opened';
                     }
                     $has_settings_change = true;
-                    sleep(8);
+                    $this->wait_for_shift_opened($api);
                 }
                 elseif(! empty( $result['status_code'] ) && $result['status_code'] == 401)
                 {
@@ -601,6 +601,41 @@ if ( ! class_exists( 'MRKV_CHECKBOX_RECEIPT_CREATOR' ) ) {
             }
 
             return true;
+        }
+
+        private function wait_for_shift_opened( $api ) {
+            $timeout  = (int) apply_filters( 'mrkv_checkbox_shift_open_timeout', 30 );
+            $interval = max( 0, (int) apply_filters( 'mrkv_checkbox_shift_open_poll_interval', 5 ) );
+            $waited   = 0;
+
+            if ( ! class_exists( 'MRKV_CHECKBOX_SHIFT_STATUS' ) ) {
+                require_once MRKV_CHECKBOX_PLUGIN_PATH . 'classes/controller/shift/mrkv-checkbox-shift-status.php';
+            }
+
+            $shift_status_checker = new MRKV_CHECKBOX_SHIFT_STATUS( $api );
+
+            $initial_wait = 8;
+            sleep( $initial_wait );
+            $waited += $initial_wait;
+
+            $shift_status = $shift_status_checker->check_shift_status();
+            if ( is_array( $shift_status ) && 'opened' === strtolower( $shift_status['status'] ?? '' ) ) {
+                return true;
+            }
+
+            if ( $waited < $timeout ) {
+                do {
+                    sleep( $interval );
+                    $waited += max( 1, $interval );
+
+                    $shift_status = $shift_status_checker->check_shift_status();
+                    if ( is_array( $shift_status ) && 'opened' === strtolower( $shift_status['status'] ?? '' ) ) {
+                        return true;
+                    }
+                } while ( $waited < $timeout );
+            }
+
+            return false;
         }
     }
 }
