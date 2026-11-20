@@ -12,6 +12,11 @@ if ( ! class_exists( 'MRKV_CHECKBOX_OPTIONS' ) ) {
      */
     class MRKV_CHECKBOX_OPTIONS {
 
+        /**
+         * @var bool The settings form save of this request is already reported to morkva
+         */
+        private $settings_save_reported = false;
+
         public function __construct() {
             add_action( 'admin_init', [ $this, 'mrkv_checkbox_register_settings' ] );
             add_filter( 'pre_update_option_mrkv_checkbox', [ $this, 'mrkv_checkbox_process_changes' ], 10, 2 );
@@ -66,7 +71,52 @@ if ( ! class_exists( 'MRKV_CHECKBOX_OPTIONS' ) ) {
                 );
             }
 
-            return apply_filters( 'mrkv_checkbox_settings_before_save', $new_value, $old_value );
+            $new_value = apply_filters( 'mrkv_checkbox_settings_before_save', $new_value, $old_value );
+
+            // 3. Report to morkva once per save of the settings form, not on every write of the option
+            // (shift status, token, receipts): those sent a request per cashier each time
+            if ( $this->is_settings_form_save() && $this->has_cashier_login( $new_value ) ) {
+                require_once MRKV_CHECKBOX_PLUGIN_PATH . 'classes/settings/admin/mrkv-checkbox-activation-deactivation.php';
+                $activation = new MRKV_CHECKBOX_ACTIVATION_DEACTIVATION();
+
+                do_action( 'mrkv_checkbox_before_sync_request', $new_value, $old_value );
+
+                $activation->mrkv_checkbox_send_request( 'updated' );
+
+                do_action( 'mrkv_checkbox_after_sync_request', $new_value );
+            }
+
+            return $new_value;
+        }
+
+        /**
+         * The option is being saved by the plugin's settings form (options.php checked the nonce and the
+         * capability already), once per request
+         */
+        private function is_settings_form_save() {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing -- options.php verified the nonce
+            $option_page = isset( $_POST['option_page'] ) ? sanitize_key( wp_unslash( $_POST['option_page'] ) ) : '';
+
+            if ( $this->settings_save_reported || 'mrkv-checkbox-settings-group' !== $option_page ) {
+                return false;
+            }
+
+            $this->settings_save_reported = true;
+
+            return true;
+        }
+
+        /**
+         * At least one cashier (or the test one) has a login: the report was sent only for such settings
+         */
+        private function has_cashier_login( $settings ) {
+            foreach ( (array) ( $settings['cashiers'] ?? array() ) as $cashier ) {
+                if ( is_array( $cashier ) && ! empty( $cashier['cashier_login'] ) ) {
+                    return true;
+                }
+            }
+
+            return is_array( $settings['test_mode'] ?? null ) && ! empty( $settings['test_mode']['cashier_login'] );
         }
 
         /**
@@ -97,15 +147,6 @@ if ( ! class_exists( 'MRKV_CHECKBOX_OPTIONS' ) ) {
                 // Keep the old token if credentials didn't change
                 $cashier['signin'] = $old_cashier['signin'] ?? '';
             }
-
-            require_once MRKV_CHECKBOX_PLUGIN_PATH . 'classes/settings/admin/mrkv-checkbox-activation-deactivation.php';
-            $activation = new MRKV_CHECKBOX_ACTIVATION_DEACTIVATION();
-            
-            do_action( 'mrkv_checkbox_before_sync_request', $cashier, $old_cashier );
-            
-            $activation->mrkv_checkbox_send_request( 'updated' );
-            
-            do_action( 'mrkv_checkbox_after_sync_request', $cashier );
 
             return $cashier;
         }
