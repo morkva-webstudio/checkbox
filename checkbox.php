@@ -13,7 +13,7 @@
  * Text Domain: checkbox
  * Domain Path: /languages
  * WC requires at least: 5.0
- * WC tested up to: 9.8
+ * WC tested up to: 11.3
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
