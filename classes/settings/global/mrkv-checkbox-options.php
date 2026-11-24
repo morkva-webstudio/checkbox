@@ -51,6 +51,9 @@ if ( ! class_exists( 'MRKV_CHECKBOX_OPTIONS' ) ) {
 
             $old_value = (array) $old_value;
 
+            // 0. The page does not send secrets back to the browser: an empty one means "not changed"
+            $new_value = $this->keep_unchanged_secrets( $new_value, $old_value );
+
             // 1. Process Production Cashiers
             if ( ! empty( $new_value['cashiers'] ) && is_array( $new_value['cashiers'] ) ) {
                 foreach ( $new_value['cashiers'] as $slug => &$cashier ) {
@@ -117,6 +120,48 @@ if ( ! class_exists( 'MRKV_CHECKBOX_OPTIONS' ) ) {
             }
 
             return is_array( $settings['test_mode'] ?? null ) && ! empty( $settings['test_mode']['cashier_login'] );
+        }
+
+        /**
+         * Cashier password and cash register key are not printed into the settings page, so the form
+         * posts them empty unless a new value was entered: keep the saved one. Before the migration
+         * to mrkv_checkbox the saved one is in the legacy ppo_* options (the form showed those).
+         */
+        private function keep_unchanged_secrets( $new_value, $old_value ) {
+            $secret_fields = [ 'cashier_password', 'register_key' ];
+            $old_cashiers  = (array) ( $old_value['cashiers'] ?? [] );
+
+            if ( empty( $old_cashiers ) ) {
+                require_once MRKV_CHECKBOX_PLUGIN_PATH . 'classes/controller/mrkv-checkbox-old-data-checker.php';
+                $old_checker  = new MRKV_CHECKBOX_OLD_CHECKER();
+                $old_cashiers = [ 'default' => $old_checker->mrkv_checkbox_get_default_cashbox() ?: [] ];
+            }
+
+            $keep = function ( $cashier, $old_cashier ) use ( $secret_fields ) {
+                if ( ! is_array( $cashier ) || ! is_array( $old_cashier ) ) {
+                    return $cashier;
+                }
+
+                foreach ( $secret_fields as $field ) {
+                    if ( '' === (string) ( $cashier[ $field ] ?? '' ) && ! empty( $old_cashier[ $field ] ) ) {
+                        $cashier[ $field ] = $old_cashier[ $field ];
+                    }
+                }
+
+                return $cashier;
+            };
+
+            if ( ! empty( $new_value['cashiers'] ) && is_array( $new_value['cashiers'] ) ) {
+                foreach ( $new_value['cashiers'] as $slug => $cashier ) {
+                    $new_value['cashiers'][ $slug ] = $keep( $cashier, $old_cashiers[ $slug ] ?? null );
+                }
+            }
+
+            if ( isset( $new_value['test_mode'] ) ) {
+                $new_value['test_mode'] = $keep( $new_value['test_mode'], $old_value['test_mode'] ?? null );
+            }
+
+            return $new_value;
         }
 
         /**
