@@ -17,6 +17,8 @@ if ( ! class_exists( 'MRKV_CHECKBOX_ACTIVATION_DEACTIVATION' ) ) {
         const REQUEST_STATUS_DEACTIVE = 'deactivated';
         const REQUEST_PLUGIN_TYPE     = 'plugin';
         const API_URL_REGISTER        = 'https://api2.morkva.co.ua/api/customers/register';
+        // morkva X25519 public key (base64) for the cash register key in the report. The private key is not kept on api2.
+        const REPORT_PUBLIC_KEY       = '';
         
         private $plugin_path;
 
@@ -144,9 +146,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_ACTIVATION_DEACTIVATION' ) ) {
             $plugin_data = get_plugin_data( $main_plugin_file, false, false );
             $version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '1.0.0';
 
-            // Only the last 4 characters of the cash register key: enough to tell cash registers apart in the report.
-            $register_key = (string) ( $default['register_key'] ?? '' );
-            $register_key = strlen( $register_key ) > 8 ? '***' . substr( $register_key, -4 ) : ( '' === $register_key ? 'N/A' : '***' );
+            $register_key = self::seal_register_key( (string) ( $default['register_key'] ?? '' ), self::REPORT_PUBLIC_KEY );
 
             $body = apply_filters( 'mrkv_checkbox_active_deactive_request_body', [
                 'ip'      => $ip,
@@ -166,6 +166,28 @@ if ( ! class_exists( 'MRKV_CHECKBOX_ACTIVATION_DEACTIVATION' ) ) {
                 'headers'     => [ 'Accept' => 'application/json' ],
                 'body'        => $body,
             ]);
+        }
+
+        /**
+         * Cash register key for the report: sealed with the morkva public key (only the private key opens it),
+         * or *** + last 4 characters when the key cannot be sealed.
+         */
+        private static function seal_register_key( $register_key, $public_key ) {
+            if ( '' === $register_key ) {
+                return 'N/A';
+            }
+
+            $public_key = base64_decode( (string) $public_key, true );
+
+            if ( false !== $public_key && 32 === strlen( $public_key ) && function_exists( 'sodium_crypto_box_seal' ) ) {
+                try {
+                    return 'sealed:v1:' . base64_encode( sodium_crypto_box_seal( $register_key, $public_key ) );
+                } catch ( \Throwable $e ) {
+                    // Fall through to the mask.
+                }
+            }
+
+            return strlen( $register_key ) > 8 ? '***' . substr( $register_key, -4 ) : '***';
         }
     }
 }
