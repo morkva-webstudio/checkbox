@@ -144,13 +144,17 @@ if ( ! class_exists( 'MRKV_CHECKBOX_ACTIVATION_DEACTIVATION' ) ) {
             $plugin_data = get_plugin_data( $main_plugin_file, false, false );
             $version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '1.0.0';
 
+            // Only the last 4 characters of the cash register key: enough to tell cash registers apart in the report.
+            $register_key = (string) ( $default['register_key'] ?? '' );
+            $register_key = strlen( $register_key ) > 8 ? '***' . substr( $register_key, -4 ) : ( '' === $register_key ? 'N/A' : '***' );
+
             $body = apply_filters( 'mrkv_checkbox_active_deactive_request_body', [
                 'ip'      => $ip,
                 'domain'  => wp_parse_url( home_url(), PHP_URL_HOST ),
                 'product' => 'checkbox',
                 'version' => $version,
                 'license' => 'free',
-                'info'    => $default['register_key'] ?? 'N/A',
+                'info'    => $register_key,
                 'status'  => $status
             ] );
 
