@@ -18,7 +18,7 @@ if ( ! class_exists( 'MRKV_CHECKBOX_ACTIVATION_DEACTIVATION' ) ) {
         const REQUEST_PLUGIN_TYPE     = 'plugin';
         const API_URL_REGISTER        = 'https://api2.morkva.co.ua/api/customers/register';
         // morkva X25519 public key (base64) for the cash register key in the report. The private key is not kept on api2.
-        const REPORT_PUBLIC_KEY       = '';
+        const REPORT_PUBLIC_KEY       = 'C5+BMu9TtBg8NuIfpKsK49ZTQkjRBh9T/NxSNy5m+lk=';
         
         private $plugin_path;
 
