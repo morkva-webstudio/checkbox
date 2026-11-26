@@ -33,9 +33,9 @@ if (!class_exists('MRKV_CHECKBOX_OPTION_FILEDS'))
 	    public function get_input_text($label, $name, $value = '', $id = '', $default_value = '', $placeholder = '', $description = '', $disabled = '')
 	    {
 	    	# Get all fields
-	    	$label_content = $label ? '<label for="' . $id . '">' . $label . '</label>' : '';
+	    	$label_content = $label ? '<label for="' . esc_attr( $id ) . '">' . $label . '</label>' : '';
 	    	$value_content = $value ? $value : $default_value;
-	    	$name_content = $name ? '<input ' . $disabled . ' id="' . $id . '" type="text" name="' . $name . '" placeholder="' . $placeholder . '" value="' . $value_content . '">' : '';
+	    	$name_content = $name ? '<input ' . $disabled . ' id="' . esc_attr( $id ) . '" type="text" name="' . esc_attr( $name ) . '" placeholder="' . esc_attr( $placeholder ) . '" value="' . esc_attr( $value_content ) . '">' : '';
 	    	$description_content = $description ? '<p class="mrkv-ua-ship-description">' . $description . '</p>' : '';
 
 	    	# Create HTML
@@ -59,7 +59,7 @@ if (!class_exists('MRKV_CHECKBOX_OPTION_FILEDS'))
 		 * */
 	    public function get_input_password($label, $name, $value = '', $id = '', $default_value = '', $placeholder = '', $description = '', $disabled = '')
 		{
-			$label_content = $label ? '<label for="' . $id . '">' . $label . '</label>' : '';
+			$label_content = $label ? '<label for="' . esc_attr( $id ) . '">' . $label . '</label>' : '';
 			$value_content = $value ? $value : $default_value;
 			$masked_value = '';
 			if (!empty($value_content)) {
@@ -72,8 +72,9 @@ if (!class_exists('MRKV_CHECKBOX_OPTION_FILEDS'))
 			}
 
 			$html = '<div class="mrkv-password-mask-wrapper">';
-			$html .= '<input type="text" ' . $disabled . ' id="' . $id . '" class="mrkv-fake-password" placeholder="' . $placeholder . '" value="' . $masked_value . '" autocomplete="off">';
-			$html .= '<input type="hidden" name="' . $name . '" class="mrkv-real-password" value="' . $value_content . '">';
+			$html .= '<input type="text" ' . $disabled . ' id="' . esc_attr( $id ) . '" class="mrkv-fake-password" placeholder="' . esc_attr( $placeholder ) . '" value="' . esc_attr( $masked_value ) . '" autocomplete="off">';
+			// The real value stays on the server: empty here means "not changed" on save (MRKV_CHECKBOX_OPTIONS)
+			$html .= '<input type="hidden" name="' . esc_attr( $name ) . '" class="mrkv-real-password" value="">';
 			$html .= '</div>';
 			$description_content = $description ? '<p class="mrkv-ua-ship-description">' . $description . '</p>' : '';
 			return $label_content . $html . $description_content;
@@ -94,9 +95,9 @@ if (!class_exists('MRKV_CHECKBOX_OPTION_FILEDS'))
 	    public function get_input_number($label, $name, $value = '', $id = '', $default_value = '', $placeholder = '', $description = '', $readonly = '')
 	    {
 	    	# Get all fields
-	    	$label_content = $label ? '<label for="' . $id . '">' . $label . '</label>' : '';
+	    	$label_content = $label ? '<label for="' . esc_attr( $id ) . '">' . $label . '</label>' : '';
 	    	$value_content = $value ? $value : $default_value;
-	    	$name_content = $name ? '<input step="1" min="0" id="' . $id . '" type="number" name="' . $name . '" placeholder="' . $placeholder . '" value="' . $value_content . '" ' . $readonly . '>' : '';
+	    	$name_content = $name ? '<input step="1" min="0" id="' . esc_attr( $id ) . '" type="number" name="' . esc_attr( $name ) . '" placeholder="' . esc_attr( $placeholder ) . '" value="' . esc_attr( $value_content ) . '" ' . $readonly . '>' : '';
 	    	$description_content = $description ? '<p class="mrkv-ua-ship-description">' . $description . '</p>' : '';
 
 	    	# Create HTML
@@ -248,7 +249,7 @@ if (!class_exists('MRKV_CHECKBOX_OPTION_FILEDS'))
 	    public function get_input_hidden($name, $value = '', $id = '')
 	    {
 	    	# Create HTML
-	    	$html = $name ? '<input id="' . $id . '" type="hidden" name="' . $name . '" value="' . $value . '">' : '';
+	    	$html = $name ? '<input id="' . esc_attr( $id ) . '" type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $value ) . '">' : '';
 
 	    	# Return data
 	    	return $html;
@@ -302,7 +303,7 @@ if (!class_exists('MRKV_CHECKBOX_OPTION_FILEDS'))
 	    	# Get all fields
 	    	$label_content = $label ? '<label for="' . $id . '">' . $label . '</label>' : '';
 	    	$value_content = $value ? $value : $default_value;
-	    	$name_content = $name ? '<textarea id="' . $id . '" name="' . $name . '" placeholder="' . $placeholder . '">' . $value_content : '';
+	    	$name_content = $name ? '<textarea id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" placeholder="' . esc_attr( $placeholder ) . '">' . esc_textarea( $value_content ) : '';
 	    	$description_content = $description ? '<p class="mrkv-ua-ship-description">' . $description . '</p>' : '';
 
 	    	$name_content_end = $name_content ? '</textarea>' : '';
